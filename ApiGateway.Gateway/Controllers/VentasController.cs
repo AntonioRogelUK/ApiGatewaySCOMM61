@@ -21,6 +21,7 @@ namespace ApiGateway.Gateway.Controllers
         public async Task<ActionResult<List<VentaDto>>> ObtenerTodos()
         {
             var clienteSqlServer = _httpClientFactory.CreateClient(ApiClients.SqlServer.ToString());
+            var clienteMondoDB = _httpClientFactory.CreateClient(ApiClients.MongoDB.ToString());
             var response = await clienteSqlServer.GetAsync($"api/Ventas/");
 
             if (!response.IsSuccessStatusCode)
@@ -35,7 +36,57 @@ namespace ApiGateway.Gateway.Controllers
             };
             var result = JsonSerializer.Deserialize<List<VentaDto>>(content, options);
 
+            foreach (var ventaDto in result)
+            {
+                var juegoResponse = await clienteMondoDB.GetAsync($"api/Juegos/{ventaDto.JuegoId}");
+
+                if (!juegoResponse.IsSuccessStatusCode)
+                {
+                    return NotFound("No se encontró el juego.");
+                }
+
+                var juegoContent = await juegoResponse.Content.ReadAsStringAsync();
+                var juegoDto = JsonSerializer.Deserialize<JuegoDto>(juegoContent, options);
+                ventaDto.Juego = juegoDto;
+            }
+
             return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<VentaDto>> ObtenerPorId(string id)
+        {
+            var clienteSqlServer = _httpClientFactory.CreateClient(ApiClients.SqlServer.ToString());
+            var clienteMondoDB = _httpClientFactory.CreateClient(ApiClients.MongoDB.ToString());
+
+            var ventaResponse = await clienteSqlServer.GetAsync($"api/Ventas/{id}");
+
+            if (!ventaResponse.IsSuccessStatusCode)
+            {
+                return NotFound("No se encontró la venta.");
+            }
+
+            var ventaContent = await ventaResponse.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions()
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            var ventaDto = JsonSerializer.Deserialize<VentaDto>(ventaContent, options);
+
+            var juegoResponse = await clienteMondoDB.GetAsync($"api/Juegos/{ventaDto.JuegoId}");
+            var usuarioResponse = await clienteSqlServer.GetAsync($"api/Usuarios/{ventaDto.UsuarioId}");
+
+            if (!juegoResponse.IsSuccessStatusCode)
+            {
+                return NotFound("No se encontró juego");
+            }
+            else if (!usuarioResponse.IsSuccessStatusCode)
+            {
+                return NotFound("No se encontró usuario");
+            }
+
+            return Ok(ventaDto);
         }
 
 
@@ -56,8 +107,6 @@ namespace ApiGateway.Gateway.Controllers
             {
                 return NotFound("No se encontró usuario");
             }
-
-
 
             var ventaContent = new StringContent(
                 JsonSerializer.Serialize(venta), Encoding.UTF8, "application/json");
