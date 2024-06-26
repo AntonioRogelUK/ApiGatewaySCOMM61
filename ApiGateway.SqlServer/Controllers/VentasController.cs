@@ -26,7 +26,7 @@ namespace ApiGateway.SqlServer.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Venta>>> ObtenerTodos()
         {
-            var ventas = await _context.Ventas.ToListAsync();
+            var ventas = await _context.Ventas.Include(u=> u.Usuario).ToListAsync();
             return Ok(ventas);
         }
 
