@@ -16,10 +16,10 @@ namespace ApiGateway.SqlServer.Controllers
             _context = context;
         }
 
-        [HttpGet("{nombre}")]
-        public async Task<ActionResult<List<Venta>>> ObtenerPorUsuario(string nombre)
+        [HttpGet("{nombreDeUsuario}")]
+        public async Task<ActionResult<List<Venta>>> ObtenerPorUsuario(string nombreDeUsuario)
         {
-            var ventas = await _context.Ventas.Where(u => u.Usuario.Username.Contains(nombre)).ToListAsync();
+            var ventas = await _context.Ventas.Where(u => u.Usuario.Username.Contains(nombreDeUsuario)).ToListAsync();
             return Ok(ventas);
         }
 

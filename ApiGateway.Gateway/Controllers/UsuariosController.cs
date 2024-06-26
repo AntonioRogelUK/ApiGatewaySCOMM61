@@ -36,14 +36,17 @@ namespace ApiGateway.Gateway.Controllers
 
             return Ok(result);
         }
-        /*
+
+
+
         [HttpPost]
-        public async Task<ActionResult<UsuarioDto>> CrearUsuario([FromBody]UsuarioDto usuario)
+        public async Task<ActionResult<UsuarioDto>> CrearUsuario(HttpContent usuarioContent)
         {
             var clienteSqlServer = _httpClientFactory.CreateClient(ApiClients.SqlServer.ToString());
-            var jsonContent = JsonSerializer.Serialize(usuario);
-            //var httpContent = new StringContent(jsonContent,System.Text.Encoding.UTF8,"application/json");
-            var response = await clienteSqlServer.PostAsJsonAsync($"api/Usuarios", jsonContent);
+            //var jsonContent = JsonSerializer.Serialize(usuario);
+            //var httpContent = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+            //var response = await clienteSqlServer.PostAsJsonAsync($"api/Usuarios", jsonContent);
+            var response = await clienteSqlServer.PostAsync("api/Usuarios", usuarioContent);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -59,6 +62,5 @@ namespace ApiGateway.Gateway.Controllers
 
             return Ok(result);
         }
-        */
     }
 }
