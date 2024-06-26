@@ -68,7 +68,6 @@ namespace ApiGateway.SqlServer.Controllers
                 return NotFound();
             }
 
-
             _context.Usuarios.Remove(usuario);
             await _context.SaveChangesAsync();
             return NoContent();
@@ -77,7 +76,7 @@ namespace ApiGateway.SqlServer.Controllers
         [HttpPut]
         public async Task<ActionResult<Usuario>> Modificar([FromBody]Usuario usuario)
         {
-            Usuario usuarioBD = await _context.Usuarios.Where(x => x.Id == usuario.Id).SingleOrDefaultAsync(); //Mejor que FindAsync?
+            Usuario usuarioBD = await _context.Usuarios.FirstOrDefaultAsync(x => x.Id == usuario.Id);
 
             if (usuario == null)
             {
@@ -86,10 +85,7 @@ namespace ApiGateway.SqlServer.Controllers
 
             _context.Entry(usuarioBD).CurrentValues.SetValues(usuario);
             await _context.SaveChangesAsync();
-
-            usuarioBD = await _context.Usuarios.Where(x => x.Id == usuario.Id).SingleOrDefaultAsync();
-
-            return Ok(usuarioBD);
+            return Ok();
         }
         /*
         [HttpGet]

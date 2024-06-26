@@ -37,7 +37,7 @@ namespace ApiGateway.SqlServer.Controllers
             {
                 return BadRequest();
             }
-            
+
             var venta = await _context.Ventas.FirstOrDefaultAsync(u => u.Id == id);
 
             if (venta == null)
