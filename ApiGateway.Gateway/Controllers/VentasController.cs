@@ -53,13 +53,13 @@ namespace ApiGateway.Gateway.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<VentaDto>> ObtenerPorId(string id)
+        [HttpGet("guid/{id}")]
+        public async Task<ActionResult<VentaDto>> ObtenerPorId(Guid id)
         {
             var clienteSqlServer = _httpClientFactory.CreateClient(ApiClients.SqlServer.ToString());
             var clienteMondoDB = _httpClientFactory.CreateClient(ApiClients.MongoDB.ToString());
 
-            var ventaResponse = await clienteSqlServer.GetAsync($"api/Ventas/{id}");
+            var ventaResponse = await clienteSqlServer.GetAsync($"api/Ventas/guid/{id}");
 
             if (!ventaResponse.IsSuccessStatusCode)
             {
@@ -75,16 +75,28 @@ namespace ApiGateway.Gateway.Controllers
             var ventaDto = JsonSerializer.Deserialize<VentaDto>(ventaContent, options);
 
             var juegoResponse = await clienteMondoDB.GetAsync($"api/Juegos/{ventaDto.JuegoId}");
-            var usuarioResponse = await clienteSqlServer.GetAsync($"api/Usuarios/{ventaDto.UsuarioId}");
+
+            var usuarioResponse = await clienteSqlServer.GetAsync($"api/Usuarios/guid/{ventaDto.UsuarioId}");
+            
 
             if (!juegoResponse.IsSuccessStatusCode)
             {
                 return NotFound("No se encontró juego");
             }
-            else if (!usuarioResponse.IsSuccessStatusCode)
+            
+            if (!usuarioResponse.IsSuccessStatusCode)
             {
                 return NotFound("No se encontró usuario");
             }
+
+            var juegoContent = await juegoResponse.Content.ReadAsStringAsync();
+            var juegoDto = JsonSerializer.Deserialize<JuegoDto>(juegoContent, options);
+            
+            var usuarioContent = await usuarioResponse.Content.ReadAsStringAsync();
+            var usuarioDto = JsonSerializer.Deserialize<UsuarioDto>(usuarioContent, options);
+
+            ventaDto.Juego = juegoDto;
+            ventaDto.Usuario = usuarioDto;
 
             return Ok(ventaDto);
         }

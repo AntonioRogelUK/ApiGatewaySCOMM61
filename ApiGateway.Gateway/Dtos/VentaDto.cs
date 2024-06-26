@@ -2,7 +2,7 @@
 {
     public class VentaDto
     {
-        public Guid Id { get; private set; } = Guid.NewGuid();
+        public Guid Id { get; set; }
         public Guid UsuarioId { get; set; }
         public UsuarioDto? Usuario { get; set; }
         public string JuegoId { get; set; }
