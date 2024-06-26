@@ -1,6 +1,7 @@
 ﻿using ApiGateway.Gateway.Dtos;
 using ApiGateway.Gateway.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 using System.Text.Json;
 
 namespace ApiGateway.Gateway.Controllers
@@ -40,27 +41,18 @@ namespace ApiGateway.Gateway.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<UsuarioDto>> CrearUsuario(HttpContent usuarioContent)
+        public async Task<ActionResult> CrearUsuario([FromBody]UsuarioDto usuario)
         {
             var clienteSqlServer = _httpClientFactory.CreateClient(ApiClients.SqlServer.ToString());
-            //var jsonContent = JsonSerializer.Serialize(usuario);
-            //var httpContent = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
-            //var response = await clienteSqlServer.PostAsJsonAsync($"api/Usuarios", jsonContent);
+            var usuarioContent = new StringContent(
+                JsonSerializer.Serialize(usuario), Encoding.UTF8, "application/json");
             var response = await clienteSqlServer.PostAsync("api/Usuarios", usuarioContent);
 
             if (!response.IsSuccessStatusCode)
             {
                 return BadRequest();
             }
-
-            var content = await response.Content.ReadAsStringAsync();
-            var options = new JsonSerializerOptions()
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            var result = JsonSerializer.Deserialize<List<UsuarioDto>>(content, options);
-
-            return Ok(result);
+            return Ok();
         }
     }
 }
